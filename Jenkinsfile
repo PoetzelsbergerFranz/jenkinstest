@@ -1,1 +1,4 @@
-bat 'ping 8.8.8.8'
+
+pipeline {
+    bat 'ping 8.8.8.8'
+}

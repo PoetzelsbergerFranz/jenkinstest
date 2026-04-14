@@ -11,9 +11,9 @@ spec:
     command: ['sleep']
     args: ['99d']
     volumeMounts:
-      - name: registry-auth
-        mountPath: /kaniko/.docker
-  volumes:
+     - name: registry-auth
+       mountPath: /kaniko/.docker
+    volumes:
     - name: registry-auth
       emptyDir: {}
   - name: kubectl

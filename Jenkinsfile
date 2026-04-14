@@ -6,20 +6,20 @@ apiVersion: v1
 kind: Pod
 spec:
   containers:
+  - name: kubectl
+    image: alpine/kubectl:latest
+    command: ['sleep']
+    args: ['99d']
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     command: ['sleep']
     args: ['99d']
     volumeMounts:
-     - name: registry-auth
-       mountPath: /kaniko/.docker
-    volumes:
+      - name: registry-auth
+        mountPath: /kaniko/.docker
+  volumes:
     - name: registry-auth
       emptyDir: {}
-  - name: kubectl
-    image: alpine/kubectl:latest
-    command: ['sleep']
-    args: ['99d']
 """
         }
     }

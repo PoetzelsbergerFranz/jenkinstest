@@ -1,18 +1,71 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    command: ['sleep']
+    args: ['99d']
+    volumeMounts:
+      - name: registry-auth
+        mountPath: /kaniko/.docker
+  volumes:
+    - name: registry-auth
+      emptyDir: {}
+"""
+        }
+    }
+    
+    environment {
+        REGISTRY = "docker-registry.kube-system.svc.cluster.local:5000"
+        IMAGE_NAME = "${REGISTRY}/jenkins-webapp:${env.BUILD_ID}"
+    }
 
     stages {
-        stage('Ping Check') {
+        stage('Build with Kaniko') {
             steps {
-                script {
-                    // Host, der angepingt werden soll
-                    def host = "google.com"
-                    
-                    echo "Pinge ${host} an..."
-                    
-                    // -c 3 sendet 3 Pakete (Linux/macOS)
-                    // Bei Windows stattdessen: bat "ping -n 3 ${host}"
-                    sh "ping -c 3 ${host}"
+                container('kaniko') {
+                    script {
+                        // Kaniko baut und pusht in einem Schritt
+                        // --insecure erlaubt HTTP zur internen Registry
+                        sh """
+                        /kaniko/executor --context `pwd` \
+                          --dockerfile `pwd`/Dockerfile \
+                          --destination ${IMAGE_NAME} \
+                          --insecure \
+                          --skip-tls-verify
+                        """
+                    }
+                }
+            }
+        }
+        
+        stage('K8s Deployment Update') {
+            steps {
+                // Nutze die hochgeladene Kubeconfig
+                withCredentials([file(credentialsId: 'k8s-config', variable: 'KUBECONFIG')]) {
+                    script {
+                        // 1. Image-Tag im Deployment-File dynamisch anpassen
+                        sh "sed -i 's|image:.*|image: ${IMAGE_NAME}|' k8s-deployment/deployment.yaml"
+                        
+                        // 2. Alle Ressourcen in Kubernetes anwenden
+                        sh "kubectl apply -f k8s-deployment/deployment.yaml --kubeconfig=${KUBECONFIG}"
+                        sh "kubectl apply -f k8s-deployment/service.yaml --kubeconfig=${KUBECONFIG}"
+                        sh "kubectl apply -f k8s-deployment/ingress.yaml --kubeconfig=${KUBECONFIG}"
+                    }
+                }
+            }
+        }
+        
+        stage('Verify') {
+            steps {
+                withCredentials([file(credentialsId: 'k8s-config', variable: 'KUBECONFIG')]) {
+                    // Status des Rollouts prüfen
+                    sh "kubectl rollout status deployment/jenkins-webapp --kubeconfig=${KUBECONFIG}"
                 }
             }
         }

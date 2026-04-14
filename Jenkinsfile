@@ -74,7 +74,7 @@ spec:
                 container('kubectl') {
                     withKubeConfig([credentialsId: 'jenkins-k8s-token', serverUrl: 'https://kubernetes.default.svc']) {
                         // Status des Rollouts prüfen
-                        sh "kubectl rollout status deployment/jenkins-webapp --kubeconfig=${KUBECONFIG}"
+                        sh "kubectl rollout status deployment/jenkins-webapp -n jenkins-webapp --kubeconfig=${KUBECONFIG}"
                     }
                 }
             }

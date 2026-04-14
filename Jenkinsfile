@@ -53,7 +53,7 @@ spec:
                 // Hier wechseln wir in den 'kubectl' Container
                 container('kubectl') {
                     // Nutze die hochgeladene Kubeconfig
-                    withKubeConfig([credentialsId: 'jenkins-k8s-token', serverUrl: 'https://default.svc']) {
+                    withKubeConfig([credentialsId: 'jenkins-k8s-token', serverUrl: 'https://kubernetes.default.svc']) {
                         script {
                             // 1. Image-Tag im Deployment-File dynamisch anpassen
                             sh "sed -i 's|image:.*|image: ${IMAGE_NAME}|' k8s-deployment/deployment.yaml"

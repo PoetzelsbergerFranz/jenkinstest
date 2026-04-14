@@ -1,5 +1,5 @@
 # Nutze das gewünschte Image als Basis
-FROM tomcat:10.1-jr21-temurin-slim
+FROM public.ecr.aws/docker/library/tomcat:10.1-jre21-temurin-slim
 
 # Entferne die Standard-Webapps (optional, für Sicherheit)
 RUN rm -rf /usr/local/tomcat/webapps/*

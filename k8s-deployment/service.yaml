@@ -5,7 +5,7 @@ metadata:
   namespace: jenkins-webapp
 spec:
   selector:
-    app: website
+    app: jenkins-webapp
   ports:
     - protocol: TCP
       port: 80

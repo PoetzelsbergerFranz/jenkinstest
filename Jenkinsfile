@@ -47,7 +47,7 @@ spec:
         stage('K8s Deployment Update') {
             steps {
                 // Nutze die hochgeladene Kubeconfig
-                withCredentials([file(credentialsId: 'kubernets-token', variable: 'KUBECONFIG')]) {
+                withKubeConfig([credentialsId: 'jenkins-k8s-token', serverUrl: 'https://default.svc']) {
                     script {
                         // 1. Image-Tag im Deployment-File dynamisch anpassen
                         sh "sed -i 's|image:.*|image: ${IMAGE_NAME}|' k8s-deployment/deployment.yaml"
@@ -63,7 +63,7 @@ spec:
         
         stage('Verify') {
             steps {
-                withCredentials([file(credentialsId: 'kubernets-token', variable: 'KUBECONFIG')]) {
+                withKubeConfig([credentialsId: 'jenkins-k8s-token', serverUrl: 'https://default.svc']) {
                     // Status des Rollouts prüfen
                     sh "kubectl rollout status deployment/jenkins-webapp --kubeconfig=${KUBECONFIG}"
                 }

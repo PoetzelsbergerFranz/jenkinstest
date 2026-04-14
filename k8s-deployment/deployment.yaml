@@ -17,4 +17,4 @@ spec:
       - name: web-container
         image: DEIN_DOCKER_USER/website-image:latest # Wird von Jenkins befüllt
         ports:
-        - containerPort: 80
+        - containerPort: 8080

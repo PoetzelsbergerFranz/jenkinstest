@@ -16,6 +16,10 @@ spec:
   volumes:
     - name: registry-auth
       emptyDir: {}
+  - name: kubectl
+    image: alpine/kubectl:latest
+    command: ['sleep']
+    args: ['99d']
 """
         }
     }
@@ -46,16 +50,19 @@ spec:
         
         stage('K8s Deployment Update') {
             steps {
-                // Nutze die hochgeladene Kubeconfig
-                withKubeConfig([credentialsId: 'jenkins-k8s-token', serverUrl: 'https://default.svc']) {
-                    script {
-                        // 1. Image-Tag im Deployment-File dynamisch anpassen
-                        sh "sed -i 's|image:.*|image: ${IMAGE_NAME}|' k8s-deployment/deployment.yaml"
-                        
-                        // 2. Alle Ressourcen in Kubernetes anwenden
-                        sh "kubectl apply -f k8s-deployment/deployment.yaml --kubeconfig=${KUBECONFIG}"
-                        sh "kubectl apply -f k8s-deployment/service.yaml --kubeconfig=${KUBECONFIG}"
-                        sh "kubectl apply -f k8s-deployment/ingress.yaml --kubeconfig=${KUBECONFIG}"
+                // Hier wechseln wir in den 'kubectl' Container
+                container('kubectl') {
+                    // Nutze die hochgeladene Kubeconfig
+                    withKubeConfig([credentialsId: 'jenkins-k8s-token', serverUrl: 'https://default.svc']) {
+                        script {
+                            // 1. Image-Tag im Deployment-File dynamisch anpassen
+                            sh "sed -i 's|image:.*|image: ${IMAGE_NAME}|' k8s-deployment/deployment.yaml"
+                            
+                            // 2. Alle Ressourcen in Kubernetes anwenden
+                            sh "kubectl apply -f k8s-deployment/deployment.yaml --kubeconfig=${KUBECONFIG}"
+                            sh "kubectl apply -f k8s-deployment/service.yaml --kubeconfig=${KUBECONFIG}"
+                            sh "kubectl apply -f k8s-deployment/ingress.yaml --kubeconfig=${KUBECONFIG}"
+                        }
                     }
                 }
             }

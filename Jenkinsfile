@@ -70,9 +70,12 @@ spec:
         
         stage('Verify') {
             steps {
-                withKubeConfig([credentialsId: 'jenkins-k8s-token', serverUrl: 'https://default.svc']) {
-                    // Status des Rollouts prüfen
-                    sh "kubectl rollout status deployment/jenkins-webapp --kubeconfig=${KUBECONFIG}"
+                // Hier wechseln wir in den 'kubectl' Container
+                container('kubectl') {
+                    withKubeConfig([credentialsId: 'jenkins-k8s-token', serverUrl: 'https://kubernetes.default.svc']) {
+                        // Status des Rollouts prüfen
+                        sh "kubectl rollout status deployment/jenkins-webapp --kubeconfig=${KUBECONFIG}"
+                    }
                 }
             }
         }

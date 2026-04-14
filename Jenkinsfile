@@ -25,7 +25,7 @@ spec:
     }
     
     environment {
-        REGISTRY = "docker-registry.kube-system.svc.cluster.local:5000"
+        REGISTRY = "docker-registry.azure.poetzelsberger.net"
         IMAGE_NAME = "${REGISTRY}/jenkins-webapp:${env.BUILD_ID}"
     }
 
@@ -39,9 +39,7 @@ spec:
                         sh """
                         /kaniko/executor --context `pwd` \
                           --dockerfile `pwd`/Dockerfile \
-                          --destination ${IMAGE_NAME} \
-                          --insecure \
-                          --skip-tls-verify
+                          --destination ${IMAGE_NAME}
                         """
                     }
                 }

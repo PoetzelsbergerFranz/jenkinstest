@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+ name: jenkins-webapp
+ namespace: jenkins-webapp
+ annotations:
+   cert-manager.io/cluster-issuer: "letsencrypt"
+   traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+ tls:
+   - hosts:
+       - jenkins-webapp.azure.poetzelsberger.net
+     secretName: tls-jenkins-webapp-ingress-http
+ rules:
+   - host: jenkins-webapp.azure.poetzelsberger.net
+     http:
+       paths:
+         - path: /
+           pathType: Prefix
+           backend:
+             service:
+               name: jenkins-webapp
+               port:
+                number: 80
